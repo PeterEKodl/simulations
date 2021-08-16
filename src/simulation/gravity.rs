@@ -1,6 +1,5 @@
 use super::controller::{Controller, SimulationBounds};
-use super::particle::get_two_particles;
-use super::particle::{Particle, Vector2D};
+use super::particle::{get_two_particles, Particle, Vector2D};
 use rand::{distributions::Uniform, prelude::*};
 
 use std::time::Duration;
@@ -24,15 +23,7 @@ impl GravityController
         p2.apply_force(&gravity_force);
         gravity_force *= -1.0;
         p1.apply_force(&gravity_force);
-
-        if (p1.radius + p2.radius).powi(2) > distance.norm_squared()
-        {
-            let k = (p1.mass + p2.mass) / (dt.as_secs_f32());
-            let overlap = (p1.radius + p2.radius) - distance.norm();
-
-            p1.apply_force(&(distance_normalized * k * overlap));
-            p2.apply_force(&(-distance_normalized * k * overlap));
-        }
+        Particle::handle_collision(p1, p2, dt);
     }
 }
 
