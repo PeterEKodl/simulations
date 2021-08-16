@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 const FPS: f32 = 30.0;
 const SPF: f32 = 1.0 / FPS;
 
-fn main()
+fn main() -> Result<(), Box<dyn std::error::Error>>
 {
     let mut simulations: Vec<Box<dyn simulation::Controller>> =
         vec![Box::new(simulation::GravityController::default())];
@@ -52,21 +52,20 @@ fn main()
     let bounds = simulation::SimulationBounds(500.0, 500.0);
     simulation.fetch_parameters_from_input(&bounds);
 
-    let sdl2_context = sdl2::init().unwrap();
-    let video_subsystem = sdl2_context.video().unwrap();
+    let sdl2_context = sdl2::init()?;
+    let video_subsystem = sdl2_context.video()?;
     let window = video_subsystem
         .window(simulation.name(), bounds.0 as u32, bounds.1 as u32)
-        .build()
-        .unwrap();
-    let mut canvas = window.into_canvas().build().unwrap();
-    let mut events = sdl2_context.event_pump().unwrap();
+        .build()?;
+    let mut canvas = window.into_canvas().build()?;
+    let mut events = sdl2_context.event_pump()?;
 
     canvas.set_draw_color(pixels::Color::RGB(0, 0, 0));
     canvas.clear();
     canvas.present();
 
     let mut now = Instant::now();
-    let SPF_duration = Duration::from_secs_f32(SPF);
+    let spf_duration = Duration::from_secs_f32(SPF);
     'main: loop
     {
         canvas.set_draw_color(pixels::Color::RGB(0, 0, 0));
@@ -86,7 +85,8 @@ fn main()
 
         let new_now = Instant::now();
 
-        std::thread::sleep(SPF_duration.saturating_sub(new_now - now));
+        std::thread::sleep(spf_duration.saturating_sub(new_now - now));
         now = new_now;
     }
+    Ok(())
 }
