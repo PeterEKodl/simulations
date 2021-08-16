@@ -1,15 +1,13 @@
 use std::time::Duration;
 
-// The time difference is constant so that the simulation is always deterministic.
-
-
+#[derive(Default)]
+pub struct SimulationBounds(pub f32, pub f32);
 
 pub trait Controller
 {
-
-    fn tick(&mut self, dt: &Duration);
+    fn tick(&mut self, dt: &Duration, bounds: &SimulationBounds);
     fn name(&self) -> &'static str;
-    fn fetch_parameters_from_input(&mut self);
-    
-
+    // bounds is required in order to configure the location of particles
+    fn fetch_parameters_from_input(&mut self, bounds: &SimulationBounds);
+    fn render(&self, canvas: &sdl2::render::Canvas<sdl2::video::Window>);
 }
