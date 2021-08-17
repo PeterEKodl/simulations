@@ -60,6 +60,7 @@ impl Particle
 
     pub fn handle_collision(p1: &mut Particle, p2: &mut Particle, dt: &Duration)
     {
+        use super::constants::DAMPING;
         let distance = p1.position - p2.position;
         if (p1.radius + p2.radius).powi(2) > distance.norm_squared()
         {
@@ -69,6 +70,8 @@ impl Particle
 
             p1.apply_force(&(distance_normalized * k * overlap));
             p2.apply_force(&(-distance_normalized * k * overlap));
+            p1.apply_force(&(-*DAMPING * p1.velocity));
+            p2.apply_force(&(-*DAMPING * p2.velocity));
         }
     }
 }
