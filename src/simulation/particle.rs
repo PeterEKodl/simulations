@@ -1,3 +1,4 @@
+use super::controller::SimulationBounds;
 pub use super::Vector2D;
 use rayon::prelude::*;
 use sdl2::gfx::primitives::{DrawRenderer, ToColor};
@@ -72,6 +73,47 @@ impl Particle
             p2.apply_force(&(-distance_normalized * k * overlap));
             p1.apply_force(&(-*DAMPING * p1.velocity));
             p2.apply_force(&(-*DAMPING * p2.velocity));
+        }
+    }
+
+    pub fn wall_collisions(&mut self, dt: &Duration, bounds: &SimulationBounds)
+    {
+        use super::constants::DAMPING;
+        // Floor collision
+        if self.position.y + self.radius > bounds.1
+        {
+            let normal: Vector2D = -Vector2D::y();
+            let displacement = self.position.y + self.radius - bounds.1;
+            let force = self.mass / dt.as_secs_f32().powi(2) * displacement;
+            self.apply_force(&(force * normal));
+            self.apply_force(&(-*DAMPING * self.velocity));
+        }
+        // Ceiling collision
+        if self.position.y - self.radius < 0.0
+        {
+            let normal: Vector2D = Vector2D::y();
+            let displacement = -self.position.y + self.radius;
+            let force = self.mass / dt.as_secs_f32().powi(2) * displacement;
+            self.apply_force(&(force * normal));
+            self.apply_force(&(-*DAMPING * self.velocity));
+        }
+        // Right
+        if self.position.x + self.radius > bounds.0
+        {
+            let normal: Vector2D = -Vector2D::x();
+            let displacement = self.position.x + self.radius - bounds.0;
+            let force = self.mass / dt.as_secs_f32().powi(2) * displacement;
+            self.apply_force(&(force * normal));
+            self.apply_force(&(-*DAMPING * self.velocity));
+        }
+        // Left
+        if self.position.x - self.radius < 0.0
+        {
+            let normal: Vector2D = Vector2D::x();
+            let displacement = -self.position.x + self.radius;
+            let force = self.mass / dt.as_secs_f32().powi(2) * displacement;
+            self.apply_force(&(force * normal));
+            self.apply_force(&(-*DAMPING * self.velocity));
         }
     }
 }

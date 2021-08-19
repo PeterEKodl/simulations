@@ -1,6 +1,5 @@
-use super::controller::{Controller, SimulationBounds};
+use super::controller::{default_fetch_parameters, Controller, SimulationBounds};
 use super::particle::{get_two_particles, Particle, Vector2D};
-use rand::{distributions::Uniform, prelude::*};
 
 use std::time::Duration;
 
@@ -53,65 +52,7 @@ impl Controller for GravityController
 
     fn fetch_parameters_from_input(&mut self, bounds: &SimulationBounds)
     {
-        let mut input_choice = String::new();
-        println!("Body count:");
-
-        let body_count = loop
-        {
-            input_choice.clear();
-            if let Err(_) = std::io::stdin().read_line(&mut input_choice)
-            {
-                println!("Input error.");
-                continue;
-            }
-            let value = if let Ok(value) = usize::from_str_radix(input_choice.trim(), 10)
-            {
-                value
-            }
-            else
-            {
-                println!("Input must be integer.");
-                continue;
-            };
-
-            break value;
-        };
-
-        const RADIUS: f32 = 10.0;
-        const MASS: f32 = 1000.0;
-
-        let grid_n = (body_count as f32).sqrt().ceil() as i32;
-        let grid_distance = (
-            bounds.0 / ((grid_n + 2) as f32),
-            bounds.1 / ((grid_n + 2) as f32),
-        );
-
-        let rand_ranges = (
-            Uniform::from(-(grid_distance.0 / 2.0 - RADIUS)..(grid_distance.0 / 2.0 - RADIUS)),
-            Uniform::from(-(grid_distance.1 / 2.0 - RADIUS)..(grid_distance.1 / 2.0 - RADIUS)),
-        );
-
-        let mut x = 0;
-        let mut y = 0;
-        let mut rng = thread_rng();
-
-        for _ in 0..body_count
-        {
-            if x == grid_n
-            {
-                x = 0;
-                y += 1;
-            }
-            self.particles.push(Particle::new(
-                MASS,
-                RADIUS,
-                Vector2D::new(
-                    ((x + 1) as f32) * grid_distance.0 + rand_ranges.0.sample(&mut rng),
-                    ((y + 1) as f32) * grid_distance.1 + rand_ranges.1.sample(&mut rng),
-                ),
-            ));
-            x += 1;
-        }
+        self.particles = default_fetch_parameters(bounds);
     }
 
     fn render(&self, canvas: &sdl2::render::Canvas<sdl2::video::Window>)
