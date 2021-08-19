@@ -1,5 +1,7 @@
-use super::controller::{default_fetch_parameters, Controller, SimulationBounds};
-use super::particle::{get_two_particles, Particle, Vector2D};
+use super::{
+    controller::{default_fetch_parameters, Controller, SimulationBounds},
+    particle::{get_two_particles, Particle, Vector2D},
+};
 use std::time::Duration;
 
 #[derive(Default)]
@@ -7,8 +9,6 @@ pub struct SandController
 {
     particles: Vec<Particle>,
 }
-
-impl SandController {}
 
 impl Controller for SandController
 {
