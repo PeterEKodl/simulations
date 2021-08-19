@@ -4,13 +4,15 @@ use sdl2::{event::Event, keyboard::Keycode, pixels};
 use std::str::FromStr;
 use std::time::{Duration, Instant};
 
-const FPS: f32 = 30.0;
+const FPS: f32 = 100.0;
 const SPF: f32 = 1.0 / FPS;
 
 fn main() -> Result<(), Box<dyn std::error::Error>>
 {
-    let mut simulations: Vec<Box<dyn simulation::Controller>> =
-        vec![Box::new(simulation::GravityController::default())];
+    let mut simulations: Vec<Box<dyn simulation::Controller>> = vec![
+        Box::new(simulation::GravityController::default()),
+        Box::new(simulation::SandController::default()),
+    ];
 
     println!("The following simulations are available:");
     simulations
@@ -49,7 +51,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
     };
     let mut simulation = simulations.remove(choice);
     println!("You chose {}.", simulation.name());
-    let bounds = simulation::SimulationBounds(500.0, 500.0);
+    let bounds = simulation::SimulationBounds(1000.0, 600.0);
     simulation.fetch_parameters_from_input(&bounds);
 
     let sdl2_context = sdl2::init()?;
