@@ -1,5 +1,8 @@
-use super::controller::{default_fetch_parameters, Controller, SimulationBounds};
-use super::particle::{get_two_particles, Particle, Vector2D};
+use super::{
+    controller::{default_fetch_parameters, Controller, SimulationBounds},
+    particle::{get_two_particles, Particle, Vector2D},
+};
+use sdl2::gfx::primitives::{DrawRenderer, ToColor};
 
 use std::time::Duration;
 
@@ -57,8 +60,19 @@ impl Controller for GravityController
 
     fn render(&self, canvas: &sdl2::render::Canvas<sdl2::video::Window>)
     {
-        self.particles
-            .iter()
-            .for_each(|p| p.render(canvas, sdl2::pixels::Color::RGB(0, 0, 255)));
+        let mut gravity_center = Vector2D::zeros();
+        self.particles.iter().for_each(|p| {
+            p.render(canvas, sdl2::pixels::Color::RGB(0, 0, 255));
+            gravity_center += p.position;
+        });
+        gravity_center /= self.particles.len() as f32;
+        canvas
+            .filled_circle(
+                gravity_center.x as i16,
+                gravity_center.y as i16,
+                3,
+                sdl2::pixels::Color::RED,
+            )
+            .unwrap();
     }
 }
