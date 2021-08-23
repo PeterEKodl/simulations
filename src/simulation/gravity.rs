@@ -60,16 +60,18 @@ impl Controller for GravityController
 
     fn render(&self, canvas: &sdl2::render::Canvas<sdl2::video::Window>)
     {
-        let mut gravity_center = Vector2D::zeros();
+        let mut mass_center = Vector2D::zeros();
+        let mut mass_sum = 0.0;
         self.particles.iter().for_each(|p| {
             p.render(canvas, sdl2::pixels::Color::RGB(0, 0, 255));
-            gravity_center += p.position;
+            mass_center += p.mass * p.position;
+            mass_sum += p.mass;
         });
-        gravity_center /= self.particles.len() as f32;
+        mass_center /= mass_sum;
         canvas
             .filled_circle(
-                gravity_center.x as i16,
-                gravity_center.y as i16,
+                mass_center.x as i16,
+                mass_center.y as i16,
                 3,
                 sdl2::pixels::Color::RED,
             )
