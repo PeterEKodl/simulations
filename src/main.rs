@@ -12,6 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
     let mut simulations: Vec<Box<dyn simulation::Controller>> = vec![
         Box::new(simulation::GravityController::default()),
         Box::new(simulation::SandController::default()),
+        Box::new(simulation::SoftbodyController::default()),
     ];
 
     println!("The following simulations are available:");

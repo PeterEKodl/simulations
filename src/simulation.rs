@@ -7,6 +7,7 @@ pub mod softbody;
 pub use controller::{Controller, SimulationBounds};
 pub use gravity::GravityController;
 pub use sand::SandController;
+pub use softbody::SoftbodyController;
 
 pub type Vector2D = nalgebra::Vector2<f32>;
 
