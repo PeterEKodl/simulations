@@ -19,12 +19,19 @@ impl SoftbodyController
         use super::constants::DAMPING;
         let distance = neighbor.position - node.position;
         let deformation = d - distance.norm();
-        let direction = distance.normalize();
+        let mut direction = distance.normalize();
         let force = direction * Self::K * deformation;
         neighbor.apply_force(&force);
         node.apply_force(&(-force));
 
-        // node.apply_force(&(-*DAMPING * node.velocity.normalize().dot(&direction) * node.velocity));
+        const DELTA: f32 = 0.001;
+
+        if ((d - DELTA)..(d + DELTA)).contains(&distance.norm())
+        {
+            node.apply_force(&(-*DAMPING * node.velocity.dot(&direction) * direction));
+            direction *= -1.0;
+            neighbor.apply_force(&(-*DAMPING * node.velocity.dot(&direction) * direction));
+        }
     }
 }
 
