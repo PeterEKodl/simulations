@@ -1,6 +1,6 @@
 mod simulation;
 
-use sdl2::{event::Event, keyboard::Keycode, pixels};
+use sdl2::{event::Event, pixels};
 use std::str::FromStr;
 use std::time::{Duration, Instant};
 
@@ -26,7 +26,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
     let choice = loop
     {
         input_choice.clear();
-        if let Err(_) = std::io::stdin().read_line(&mut input_choice)
+        if std::io::stdin().read_line(&mut input_choice).is_err()
         {
             println!("Input error.");
             continue;
@@ -76,14 +76,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
         simulation.render(&canvas);
         canvas.present();
         simulation.tick(&simulation::constants::DT, &bounds);
-        if let Some(event) = events.poll_event()
+        if let Some(Event::Quit { .. }) = events.poll_event()
         {
-            match event
-            {
-                Event::Quit { .. } => break 'main,
-                _ =>
-                {}
-            }
+            break 'main;
         }
 
         let new_now = Instant::now();

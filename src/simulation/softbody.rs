@@ -14,12 +14,7 @@ pub struct SoftbodyController
 
 impl SoftbodyController
 {
-    fn calculate_force(
-        (neighbor, node): (&mut Particle, &mut Particle),
-        d: f32,
-        k: f32,
-        dt: &Duration,
-    )
+    fn calculate_force((neighbor, node): (&mut Particle, &mut Particle), d: f32, k: f32)
     {
         use super::constants::DAMPING;
         let distance = neighbor.position - node.position;
@@ -28,8 +23,6 @@ impl SoftbodyController
         let force = direction * k * deformation;
         neighbor.apply_force(&force);
         node.apply_force(&(-force));
-
-        const DELTA: f32 = 0.001;
 
         let mut relative_velocity = node.velocity - neighbor.velocity;
         node.apply_force(&(-*DAMPING * relative_velocity.dot(&direction) * direction));
@@ -84,7 +77,6 @@ impl Controller for SoftbodyController
                                 self.side_length
                             },
                             self.k,
-                            dt,
                         );
                     }
                 }
@@ -112,7 +104,7 @@ impl Controller for SoftbodyController
                 "Distance between soft body nodes. [{}; {}]",
                 input_min, input_max
             );
-            if let Err(_) = std::io::stdin().read_line(&mut input)
+            if std::io::stdin().read_line(&mut input).is_err()
             {
                 println!("Input error.");
                 continue;
@@ -137,7 +129,7 @@ impl Controller for SoftbodyController
         {
             input.clear();
             println!("Spring stiffness:");
-            if let Err(_) = std::io::stdin().read_line(&mut input)
+            if std::io::stdin().read_line(&mut input).is_err()
             {
                 println!("Input error.");
                 continue;

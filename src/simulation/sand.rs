@@ -21,7 +21,7 @@ impl Controller for SandController
     {
         use super::constants::GRAVITY;
         static GRAVITY_VECTOR: Vector2D = Vector2D::new(0.0, GRAVITY);
-        if self.particles.len() < 1
+        if self.particles.is_empty()
         {
             return;
         }

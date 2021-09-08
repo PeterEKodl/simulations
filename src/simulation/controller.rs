@@ -30,12 +30,12 @@ pub fn default_fetch_parameters(bounds: &SimulationBounds) -> Vec<Particle>
     let body_count = loop
     {
         input_choice.clear();
-        if let Err(_) = std::io::stdin().read_line(&mut input_choice)
+        if std::io::stdin().read_line(&mut input_choice).is_err()
         {
             println!("Input error.");
             continue;
         }
-        let value = if let Ok(value) = usize::from_str_radix(input_choice.trim(), 10)
+        let value = if let Ok(value) = input_choice.trim().parse::<usize>()
         {
             value
         }

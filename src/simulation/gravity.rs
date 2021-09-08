@@ -2,7 +2,7 @@ use super::{
     controller::{default_fetch_parameters, Controller, SimulationBounds},
     particle::{get_two_particles, Particle, Vector2D},
 };
-use sdl2::gfx::primitives::{DrawRenderer, ToColor};
+use sdl2::gfx::primitives::DrawRenderer;
 
 use std::time::Duration;
 
@@ -36,9 +36,9 @@ impl Controller for GravityController
         "Gravity"
     }
 
-    fn tick(&mut self, dt: &Duration, bounds: &SimulationBounds)
+    fn tick(&mut self, dt: &Duration, _bounds: &SimulationBounds)
     {
-        if self.particles.len() < 1
+        if self.particles.is_empty()
         {
             return;
         }
