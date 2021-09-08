@@ -9,29 +9,33 @@ pub struct SoftbodyController
     particles: Vec<Particle>,
     side_length: f32,
     diagonal_length: f32,
+    k: f32,
 }
 
 impl SoftbodyController
 {
-    const K: f32 = 500.0;
-    fn calculate_force((neighbor, node): (&mut Particle, &mut Particle), d: f32, dt: &Duration)
+    fn calculate_force(
+        (neighbor, node): (&mut Particle, &mut Particle),
+        d: f32,
+        k: f32,
+        dt: &Duration,
+    )
     {
         use super::constants::DAMPING;
         let distance = neighbor.position - node.position;
         let deformation = d - distance.norm();
         let mut direction = distance.normalize();
-        let force = direction * Self::K * deformation;
+        let force = direction * k * deformation;
         neighbor.apply_force(&force);
         node.apply_force(&(-force));
 
         const DELTA: f32 = 0.001;
 
-        if ((d - DELTA)..(d + DELTA)).contains(&distance.norm())
-        {
-            node.apply_force(&(-*DAMPING * node.velocity.dot(&direction) * direction));
-            direction *= -1.0;
-            neighbor.apply_force(&(-*DAMPING * node.velocity.dot(&direction) * direction));
-        }
+        let mut relative_velocity = node.velocity - neighbor.velocity;
+        node.apply_force(&(-*DAMPING * relative_velocity.dot(&direction) * direction));
+        direction *= -1.0;
+        relative_velocity *= -1.0;
+        neighbor.apply_force(&(-*DAMPING * relative_velocity.dot(&direction) * direction));
     }
 }
 
@@ -43,6 +47,7 @@ impl Default for SoftbodyController
             particles: Vec::new(),
             side_length: 0.0,
             diagonal_length: 0.0,
+            k: 0.0,
         }
     }
 }
@@ -78,6 +83,7 @@ impl Controller for SoftbodyController
                             {
                                 self.side_length
                             },
+                            self.k,
                             dt,
                         );
                     }
@@ -125,6 +131,27 @@ impl Controller for SoftbodyController
                 println!("Input must be in range [{}; {}]", input_min, input_max);
                 continue;
             }
+            break value;
+        };
+        self.k = loop
+        {
+            input.clear();
+            println!("Spring stiffness:");
+            if let Err(_) = std::io::stdin().read_line(&mut input)
+            {
+                println!("Input error.");
+                continue;
+            }
+            let value = if let Ok(value) = f32::from_str(input.trim())
+            {
+                value
+            }
+            else
+            {
+                println!("Input must be a real number.");
+                continue;
+            };
+
             break value;
         };
         self.side_length = side_length;
