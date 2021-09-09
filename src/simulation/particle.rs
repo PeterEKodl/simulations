@@ -71,8 +71,10 @@ impl Particle
 
             p1.apply_force(&(distance_normalized * k * overlap));
             p2.apply_force(&(-distance_normalized * k * overlap));
-            p1.apply_force(&(-*DAMPING * p1.velocity));
-            p2.apply_force(&(-*DAMPING * p2.velocity));
+            let mut relative_velocity = p1.velocity - p2.velocity;
+            p1.apply_force(&(-*DAMPING * relative_velocity));
+            relative_velocity *= -1.0;
+            p2.apply_force(&(-*DAMPING * relative_velocity));
         }
     }
 
