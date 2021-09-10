@@ -1,9 +1,10 @@
 use super::particle::Particle;
 use super::Vector2D;
 use rand::{distributions::Uniform, prelude::*};
+use sdl2::keyboard::Keycode;
 use std::time::Duration;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct SimulationBounds(pub f32, pub f32);
 
 pub trait Controller
@@ -13,6 +14,7 @@ pub trait Controller
     // bounds is required in order to configure the location of particles
     fn fetch_parameters_from_input(&mut self, bounds: &SimulationBounds);
     fn render(&self, canvas: &sdl2::render::Canvas<sdl2::video::Window>);
+    fn handle_key_down(&mut self, _key: Keycode) {}
 }
 
 pub fn default_fetch_parameters(bounds: &SimulationBounds) -> Vec<Particle>

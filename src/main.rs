@@ -76,9 +76,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
         simulation.render(&canvas);
         canvas.present();
         simulation.tick(&simulation::constants::DT, &bounds);
-        if let Some(Event::Quit { .. }) = events.poll_event()
+        match events.poll_event()
         {
-            break 'main;
+            Some(Event::Quit { .. }) => break 'main,
+            Some(Event::KeyDown {
+                keycode: Some(key), ..
+            }) => simulation.handle_key_down(key),
+            _ =>
+            {}
         }
 
         let new_now = Instant::now();

@@ -10,11 +10,13 @@ use std::time::Duration;
 pub struct GravityController
 {
     particles: Vec<Particle>,
+    scale: f32,
+    bounds: SimulationBounds,
 }
 
 impl GravityController
 {
-    pub fn calculate_forces(&mut self, index1: usize, index2: usize, dt: &Duration)
+    fn calculate_forces(&mut self, index1: usize, index2: usize, dt: &Duration)
     {
         let (p1, p2) = get_two_particles(&mut self.particles, index1, index2);
         let distance = p1.position - p2.position;
@@ -26,6 +28,13 @@ impl GravityController
         gravity_force *= -1.0;
         p1.apply_force(&gravity_force);
         Particle::handle_collision(p1, p2, dt);
+    }
+
+    fn transform_position(&self, mut x: f32, mut y: f32) -> (i16, i16)
+    {
+        x += self.bounds.0 * (self.scale - 1.0) / 2.0;
+        y += self.bounds.1 * (self.scale - 1.0) / 2.0;
+        ((x / self.scale) as i16, (y / self.scale) as i16)
     }
 }
 
@@ -56,6 +65,8 @@ impl Controller for GravityController
     fn fetch_parameters_from_input(&mut self, bounds: &SimulationBounds)
     {
         self.particles = default_fetch_parameters(bounds);
+        self.scale = 1.0;
+        self.bounds = bounds.clone();
     }
 
     fn render(&self, canvas: &sdl2::render::Canvas<sdl2::video::Window>)
@@ -63,18 +74,36 @@ impl Controller for GravityController
         let mut mass_center = Vector2D::zeros();
         let mut mass_sum = 0.0;
         self.particles.iter().for_each(|p| {
-            p.render(canvas, sdl2::pixels::Color::RGB(0, 0, 255));
+            let position = self.transform_position(p.position.x, p.position.y);
+            canvas
+                .filled_circle(
+                    position.0,
+                    position.1,
+                    (p.radius / self.scale) as i16,
+                    sdl2::pixels::Color::BLUE,
+                )
+                .unwrap();
             mass_center += p.mass * p.position;
             mass_sum += p.mass;
         });
         mass_center /= mass_sum;
+        let position = self.transform_position(mass_center.x, mass_center.y);
         canvas
-            .filled_circle(
-                mass_center.x as i16,
-                mass_center.y as i16,
-                3,
-                sdl2::pixels::Color::RED,
-            )
+            .filled_circle(position.0, position.1, 3, sdl2::pixels::Color::RED)
             .unwrap();
+    }
+
+    fn handle_key_down(&mut self, key: sdl2::keyboard::Keycode)
+    {
+        const SCALE_RATE: f32 = 1.05;
+        use sdl2::keyboard::Keycode;
+        match key
+        {
+            Keycode::Equals => self.scale /= SCALE_RATE,
+            Keycode::Minus => self.scale *= SCALE_RATE,
+            Keycode::Num0 => self.scale = 1.0,
+            _ =>
+            {}
+        }
     }
 }
