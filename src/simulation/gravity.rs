@@ -105,5 +105,6 @@ impl Controller for GravityController
             _ =>
             {}
         }
+        self.scale = self.scale.max(1.0);
     }
 }
