@@ -9,7 +9,7 @@ pub struct Particle
     pub radius: f32,
     pub position: Vector2D,
     pub velocity: Vector2D,
-    pub force: Vector2D,
+    pub force_accumulator: Vector2D,
 }
 
 impl Particle
@@ -21,25 +21,25 @@ impl Particle
             radius,
             position,
             velocity: Vector2D::zeros(),
-            force: Vector2D::zeros(),
+            force_accumulator: Vector2D::zeros(),
         }
     }
 
     pub fn apply_force(&mut self, force: &Vector2D)
     {
-        self.force += force;
+        self.force_accumulator += force;
     }
 
     pub fn apply_acceleration(&mut self, acceleration: &Vector2D)
     {
-        self.force += acceleration * self.mass;
+        self.force_accumulator += acceleration * self.mass;
     }
 
     pub fn tick(&mut self, dt: &Duration)
     {
-        self.velocity += (self.force / self.mass) * dt.as_secs_f32();
+        self.velocity += (self.force_accumulator / self.mass) * dt.as_secs_f32();
         self.position += self.velocity * dt.as_secs_f32();
-        self.force.fill(0.0);
+        self.force_accumulator.fill(0.0);
     }
 
     pub fn update_vec(particles: &mut Vec<Particle>, dt: &Duration)
@@ -71,10 +71,10 @@ impl Particle
 
             p1.apply_force(&(distance_normalized * k * overlap));
             p2.apply_force(&(-distance_normalized * k * overlap));
-            let mut relative_velocity = p1.velocity - p2.velocity;
-            p1.apply_force(&(-*DAMPING * relative_velocity));
-            relative_velocity *= -1.0;
-            p2.apply_force(&(-*DAMPING * relative_velocity));
+            let relative_velocity = p1.velocity - p2.velocity;
+            let force = -*DAMPING * relative_velocity;
+            p1.apply_force(&force);
+            p2.apply_force(&-force);
         }
     }
 
@@ -99,7 +99,7 @@ impl Particle
             self.apply_force(&(force * normal));
             self.apply_force(&(-*DAMPING * self.velocity));
         }
-        // Right
+        // Right side collision
         if self.position.x + self.radius > bounds.0
         {
             let normal: Vector2D = -Vector2D::x();
@@ -108,7 +108,7 @@ impl Particle
             self.apply_force(&(force * normal));
             self.apply_force(&(-*DAMPING * self.velocity));
         }
-        // Left
+        // Left side collision
         if self.position.x - self.radius < 0.0
         {
             let normal: Vector2D = Vector2D::x();
