@@ -1,14 +1,13 @@
 use super::{
     controller::{Controller, SimulationBounds},
-    particle::{get_two_particles, Particle, Vector2D},
+    particle::{Particle, Vector2D},
 };
 use std::time::Duration;
 
 pub struct SoftbodyController
 {
     particles: Vec<Particle>,
-    side_length: f32,
-    diagonal_length: f32,
+    edge_lengths: Vec<f32>,
     k: f32,
 }
 
@@ -19,16 +18,15 @@ impl SoftbodyController
         use super::constants::DAMPING;
         let distance = neighbor.position - node.position;
         let deformation = d - distance.norm();
-        let mut direction = distance.normalize();
+        let direction = distance.normalize();
         let force = direction * k * deformation;
         neighbor.apply_force(&force);
         node.apply_force(&(-force));
 
-        let mut relative_velocity = node.velocity - neighbor.velocity;
-        node.apply_force(&(-*DAMPING * relative_velocity.dot(&direction) * direction));
-        direction *= -1.0;
-        relative_velocity *= -1.0;
-        neighbor.apply_force(&(-*DAMPING * relative_velocity.dot(&direction) * direction));
+        let relative_velocity = node.velocity - neighbor.velocity;
+        let force = -*DAMPING * relative_velocity.dot(&direction) * direction;
+        node.apply_force(&force);
+        neighbor.apply_force(&-force);
     }
 }
 
@@ -38,8 +36,7 @@ impl Default for SoftbodyController
     {
         Self {
             particles: Vec::new(),
-            side_length: 0.0,
-            diagonal_length: 0.0,
+            edge_lengths: Vec::new(),
             k: 0.0,
         }
     }
@@ -57,31 +54,16 @@ impl Controller for SoftbodyController
         use super::constants::GRAVITY;
         static GRAVITY_VECTOR: Vector2D = Vector2D::new(0.0, GRAVITY);
 
-        // Stupid hack to iterate through the nodes and their neighbors.
-        [[1, 2, 3], [-1, 3, 2], [3, -1, -1]]
-            .iter()
-            .enumerate()
-            .for_each(|(e, t)| {
-                for (index, &i) in t.iter().enumerate()
-                {
-                    if i != -1
-                    {
-                        Self::calculate_force(
-                            get_two_particles(&mut self.particles, e, i as usize),
-                            if index == 2
-                            {
-                                self.diagonal_length
-                            }
-                            else
-                            {
-                                self.side_length
-                            },
-                            self.k,
-                        );
-                    }
-                }
-            });
-
+        let mut edge_length_iter = self.edge_lengths.iter();
+        for i in 0..self.particles.len() - 1
+        {
+            let (lower, upper) = self.particles.split_at_mut(i + 1);
+            let p1 = &mut lower[i];
+            for p2 in upper
+            {
+                Self::calculate_force((p2, p1), *edge_length_iter.next().unwrap(), self.k);
+            }
+        }
         self.particles.iter_mut().for_each(|p| {
             p.apply_acceleration(&GRAVITY_VECTOR);
             p.wall_collisions(dt, bounds);
@@ -146,8 +128,6 @@ impl Controller for SoftbodyController
 
             break value;
         };
-        self.side_length = side_length;
-        self.diagonal_length = std::f32::consts::SQRT_2 * side_length;
         let offset = (
             (bounds.0 - side_length) / 2.0,
             (bounds.1 - side_length) / 2.0,
@@ -165,6 +145,16 @@ impl Controller for SoftbodyController
                         offset.1 + i as f32 * side_length,
                     ),
                 ));
+            }
+        }
+
+        for i in 0..self.particles.len() - 1
+        {
+            let (lower, upper) = self.particles.split_at(i + 1);
+            let p1 = &lower[i];
+            for p2 in upper
+            {
+                self.edge_lengths.push((p1.position - p2.position).norm());
             }
         }
     }
