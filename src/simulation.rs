@@ -11,8 +11,7 @@ pub use softbody::SoftbodyController;
 
 pub type Vector2D = nalgebra::Vector2<f32>;
 
-pub mod constants
-{
+pub mod constants {
     use lazy_static::lazy_static;
     use std::time::Duration;
     pub const DT: Duration = Duration::from_millis(50);
@@ -25,11 +24,9 @@ pub mod constants
 }
 
 #[cfg(test)]
-mod tests
-{
+mod tests {
     #[test]
-    fn test_constants()
-    {
+    fn test_constants() {
         use super::constants;
         println!("{}", *constants::DAMPING);
     }

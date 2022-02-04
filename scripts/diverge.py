@@ -6,8 +6,10 @@ G = 9.81
 sample_rate = 1
 n_samples = 100
 
+
 def integration(t):
-    return (G * t**2)/2
+    return (G * t ** 2) / 2
+
 
 def euler_integration():
     p = 0.0
@@ -16,6 +18,7 @@ def euler_integration():
         v += G * dt
         p += v * dt
         yield p
+
 
 def main():
     x_axis = [0.0]
@@ -42,13 +45,14 @@ def main():
     plt.ylabel("x in m")
     plt.ylim(0.0, 50000)
     plt.xlim(0.0, 100)
-    plt.plot(x_axis, normal_y, 'b', label="Normale Integration")
-    plt.plot(x_axis, euler_y, 'r', label="Euler Integration")
-    plt.plot(x_axis, delta, 'black', label="∆x")
+    plt.plot(x_axis, normal_y, "b", label="Normale Integration")
+    plt.plot(x_axis, euler_y, "r", label="Euler Integration")
+    plt.plot(x_axis, delta, "black", label="∆x")
     plt.legend()
     plt.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
 
 # a

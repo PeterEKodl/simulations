@@ -7,8 +7,7 @@ use std::time::Duration;
 #[derive(Default, Clone)]
 pub struct SimulationBounds(pub f32, pub f32);
 
-pub trait Controller
-{
+pub trait Controller {
     fn tick(&mut self, dt: &Duration, bounds: &SimulationBounds);
     fn name(&self) -> &'static str;
     // bounds is required in order to configure the location of particles
@@ -17,8 +16,7 @@ pub trait Controller
     fn handle_key_down(&mut self, _key: Keycode) {}
 }
 
-pub fn default_fetch_parameters(bounds: &SimulationBounds) -> Vec<Particle>
-{
+pub fn default_fetch_parameters(bounds: &SimulationBounds) -> Vec<Particle> {
     const RADIUS: f32 = 10.0;
     const MASS: f32 = 1000.0;
 
@@ -28,27 +26,21 @@ pub fn default_fetch_parameters(bounds: &SimulationBounds) -> Vec<Particle>
     let input_max = ((bounds.0 / (RADIUS * 2.0) - 1.0).floor())
         .min((bounds.1 / (RADIUS * 2.0) - 1.0).floor())
         .powi(2) as usize;
-    println!("Max: {}", input_max);
-    let body_count = loop
-    {
+    println!("Max: {input_max}");
+    let body_count = loop {
         input_choice.clear();
-        if std::io::stdin().read_line(&mut input_choice).is_err()
-        {
+        if std::io::stdin().read_line(&mut input_choice).is_err() {
             println!("Input error.");
             continue;
         }
-        let value = if let Ok(value) = input_choice.trim().parse::<usize>()
-        {
+        let value = if let Ok(value) = input_choice.trim().parse::<usize>() {
             value
-        }
-        else
-        {
+        } else {
             println!("Input must be integer.");
             continue;
         };
-        if value > input_max
-        {
-            println!("Input must be smaller than the max {}.", input_max);
+        if value > input_max {
+            println!("Input must be smaller than the max {input_max}.");
             continue;
         }
 
@@ -71,10 +63,8 @@ pub fn default_fetch_parameters(bounds: &SimulationBounds) -> Vec<Particle>
 
     let mut particles = Vec::with_capacity(body_count);
 
-    for _ in 0..body_count
-    {
-        if x == grid_n
-        {
+    for _ in 0..body_count {
+        if x == grid_n {
             x = 0;
             y += 1;
         }
